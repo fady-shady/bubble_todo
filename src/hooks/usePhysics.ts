@@ -259,9 +259,25 @@ export function usePhysics(
           s.ex *= decay;
           s.ey *= decay;
 
-          // Hard safety clamp so nothing ever escapes the field.
-          s.x = Math.max(s.radius, Math.min(W - s.radius, s.x));
-          s.y = Math.max(s.radius, Math.min(H - s.radius, s.y));
+          // Edge bounce — reflect heading so base drift points away from wall.
+          if (s.x <= s.radius) {
+            s.x = s.radius;
+            if (Math.cos(s.heading) < 0) s.heading = Math.PI - s.heading;
+            s.ex = Math.abs(s.ex);
+          } else if (s.x >= W - s.radius) {
+            s.x = W - s.radius;
+            if (Math.cos(s.heading) > 0) s.heading = Math.PI - s.heading;
+            s.ex = -Math.abs(s.ex);
+          }
+          if (s.y <= s.radius) {
+            s.y = s.radius;
+            if (Math.sin(s.heading) < 0) s.heading = -s.heading;
+            s.ey = Math.abs(s.ey);
+          } else if (s.y >= H - s.radius) {
+            s.y = H - s.radius;
+            if (Math.sin(s.heading) > 0) s.heading = -s.heading;
+            s.ey = -Math.abs(s.ey);
+          }
         }
       }
 
