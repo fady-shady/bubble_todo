@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useTasks } from './hooks/useTasks';
+import { useCategories } from './hooks/useCategories';
 import { FieldView } from './components/FieldView';
 import { FocusView } from './components/FocusView';
 import { AddFab } from './components/AddFab';
@@ -13,6 +14,8 @@ interface Explosion {
 
 export default function App() {
   const { tasks, updateTask, addTask, removeTask, completeTask } = useTasks();
+  const { categories, stylesMap, addCategory, updateCategory, deleteCategory } = useCategories();
+
   const [focusId, setFocusId] = useState<string | null>(null);
   const [morphRect, setMorphRect] = useState<DOMRect | null>(null);
   const [isNewTask, setIsNewTask] = useState(false);
@@ -34,7 +37,6 @@ export default function App() {
   };
 
   const handleClose = () => {
-    // Fill empty title with default
     if (focused && !focused.title.trim()) {
       updateTask(focused.id, { title: 'New Task' });
     }
@@ -49,7 +51,7 @@ export default function App() {
   };
 
   const handleComplete = (id: string, cx: number, cy: number, color: string) => {
-    completeTask(id); // Node vanishes instantly on explosion
+    completeTask(id);
     setExplosion({ cx, cy, color });
     setTimeout(() => setExplosion(null), 1100);
   };
@@ -61,6 +63,7 @@ export default function App() {
 
       <FieldView
         tasks={tasks}
+        stylesMap={stylesMap}
         paused={focusId !== null}
         onOpen={handleOpen}
         onComplete={handleComplete}
@@ -71,9 +74,14 @@ export default function App() {
           task={focused}
           morphRect={morphRect}
           isNew={isNewTask}
+          categories={categories}
+          stylesMap={stylesMap}
           onChange={(patch) => updateTask(focused.id, patch)}
           onClose={handleClose}
           onRemove={handleRemove}
+          onAddCategory={addCategory}
+          onUpdateCategory={updateCategory}
+          onDeleteCategory={deleteCategory}
         />
       )}
 

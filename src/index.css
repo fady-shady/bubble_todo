@@ -481,6 +481,140 @@ body {
   pointer-events: none;
 }
 
+/* ---- Category editor popup ---- */
+.cat-editor-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(2, 4, 10, 0.6);
+  backdrop-filter: blur(8px);
+  animation: confirm-in 160ms ease both;
+}
+
+.cat-editor-dialog {
+  background: rgba(12, 16, 28, 0.97);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: min(340px, 90vw);
+  box-shadow: 0 32px 96px rgba(0, 0, 0, 0.7);
+  animation: confirm-rise 200ms cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+.cat-editor-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.cat-editor-orb {
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  transition: background 120ms ease, box-shadow 120ms ease;
+}
+
+.cat-editor-name-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 9px 13px;
+  font-size: 15px;
+  font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 500;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 150ms ease;
+}
+.cat-editor-name-input::placeholder { color: var(--ink-faint); }
+.cat-editor-name-input:focus { border-color: rgba(255, 255, 255, 0.22); }
+
+.cat-editor-hue-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.cat-editor-hue-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  transition: background 80ms ease;
+}
+
+/* Hue slider — full rainbow track */
+.cat-editor-hue-slider {
+  flex: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  height: 10px;
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+  background: linear-gradient(
+    to right,
+    hsl(0,80%,52%), hsl(30,80%,52%), hsl(60,80%,52%), hsl(90,80%,52%),
+    hsl(120,80%,52%), hsl(150,80%,52%), hsl(180,80%,52%), hsl(210,80%,52%),
+    hsl(240,80%,52%), hsl(270,80%,52%), hsl(300,80%,52%), hsl(330,80%,52%), hsl(359,80%,52%)
+  );
+}
+.cat-editor-hue-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  background: var(--thumb-color, white);
+  border: 3px solid rgba(255,255,255,0.9);
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+  transition: background 80ms ease;
+}
+.cat-editor-hue-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 9999px;
+  background: var(--thumb-color, white);
+  border: 3px solid rgba(255,255,255,0.9);
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+}
+
+.cat-editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cat-editor-delete,
+.cat-editor-cancel,
+.cat-editor-save {
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: opacity 140ms ease, transform 140ms ease;
+}
+.cat-editor-delete:hover,
+.cat-editor-cancel:hover,
+.cat-editor-save:hover  { opacity: 0.8; transform: translateY(-1px); }
+.cat-editor-save:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+.cat-editor-delete { background: rgba(200, 40, 55, 0.22); color: rgba(240, 100, 110, 0.9); }
+.cat-editor-cancel { background: rgba(255, 255, 255, 0.07); color: var(--ink-soft); }
+.cat-editor-save   { background: rgba(255, 255, 255, 0.12); color: var(--ink); }
+
 /* ---- Remove confirmation dialog ---- */
 .remove-confirm-backdrop {
   position: fixed;

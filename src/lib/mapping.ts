@@ -1,10 +1,4 @@
-import type { Category, Effort, Importance, Task, Urgency } from '../types';
-
-/**
- * Central source of truth for how a task's properties translate into visuals
- * and motion. Both the floating field and the focused editor read from here so
- * the two views always agree.
- */
+import type { CategoryDef, Effort, Importance, Task, Urgency } from '../types';
 
 export interface CategoryStyle {
   label: string;
@@ -20,61 +14,34 @@ export interface CategoryStyle {
   swatch: string;
 }
 
-export const CATEGORY_ORDER: Category[] = [
-  'work',
-  'university',
-  'family',
-  'personal',
-  'health',
-];
+/** Derives all visual style tokens from a single HSL hue. */
+export function categoryStyleFromHue(label: string, hue: number): CategoryStyle {
+  return {
+    label,
+    core:   `hsla(${hue}, 100%, 91%, 0.92)`,
+    body:   `hsla(${hue}, 88%,  52%, 0.97)`,
+    dark:   `hsla(${hue}, 78%,  8%,  0.98)`,
+    glow:   `hsla(${hue}, 88%,  58%, 0.56)`,
+    swatch: `hsl(${hue},  82%,  52%)`,
+  };
+}
 
-export const CATEGORIES: Record<Category, CategoryStyle> = {
-  work: {
-    label: 'Work',
-    /* cyan — cool, focused */
-    core: 'rgba(200, 255, 255, 0.92)',
-    body: 'rgba(0, 195, 222, 0.97)',
-    dark: 'rgba(0, 32, 55, 0.98)',
-    glow: 'rgba(0, 210, 240, 0.58)',
-    swatch: '#00c3de',
-  },
-  university: {
-    label: 'University',
-    /* electric blue — deep, intellectual */
-    core: 'rgba(195, 215, 255, 0.92)',
-    body: 'rgba(55, 118, 255, 0.97)',
-    dark: 'rgba(5, 14, 80, 0.98)',
-    glow: 'rgba(65, 130, 255, 0.56)',
-    swatch: '#3776ff',
-  },
-  family: {
-    label: 'Family',
-    /* rose — warm, expressive */
-    core: 'rgba(255, 195, 220, 0.92)',
-    body: 'rgba(240, 55, 120, 0.97)',
-    dark: 'rgba(80, 5, 35, 0.98)',
-    glow: 'rgba(255, 50, 128, 0.56)',
-    swatch: '#f03778',
-  },
-  personal: {
-    label: 'Personal',
-    /* amber — warm glow */
-    core: 'rgba(255, 248, 190, 0.92)',
-    body: 'rgba(240, 168, 18, 0.97)',
-    dark: 'rgba(75, 32, 0, 0.98)',
-    glow: 'rgba(255, 182, 20, 0.56)',
-    swatch: '#f0a812',
-  },
-  health: {
-    label: 'Health',
-    /* emerald — vital, alive */
-    core: 'rgba(188, 255, 218, 0.92)',
-    body: 'rgba(25, 208, 105, 0.97)',
-    dark: 'rgba(0, 48, 22, 0.98)',
-    glow: 'rgba(28, 228, 112, 0.56)',
-    swatch: '#19d069',
-  },
+export const FALLBACK_STYLE: CategoryStyle = {
+  label: '?',
+  core:   'rgba(220, 225, 240, 0.85)',
+  body:   'rgba(130, 135, 160, 0.95)',
+  dark:   'rgba(20,  22,  36,  0.98)',
+  glow:   'rgba(150, 155, 180, 0.50)',
+  swatch: '#828790',
 };
+
+export const DEFAULT_CATEGORIES: CategoryDef[] = [
+  { id: 'work',       label: 'Work',       hue: 187 },
+  { id: 'university', label: 'University', hue: 220 },
+  { id: 'family',     label: 'Family',     hue: 335 },
+  { id: 'personal',   label: 'Personal',   hue: 38  },
+  { id: 'health',     label: 'Health',     hue: 145 },
+];
 
 /** Effort → on-screen diameter in px. */
 export function effortToDiameter(effort: Effort): number {
@@ -110,11 +77,11 @@ export const URGENCY_LABEL: Record<Urgency, string> = {
 };
 
 /** Convenience: full visual descriptor for a task. */
-export function describe(task: Task) {
+export function describe(task: Task, stylesMap: Record<string, CategoryStyle>) {
   return {
-    style: CATEGORIES[task.category],
+    style:    stylesMap[task.category] ?? FALLBACK_STYLE,
     diameter: effortToDiameter(task.effort),
-    opacity: importanceToOpacity(task.importance),
-    speed: urgencyToSpeed(task.urgency),
+    opacity:  importanceToOpacity(task.importance),
+    speed:    urgencyToSpeed(task.urgency),
   };
 }

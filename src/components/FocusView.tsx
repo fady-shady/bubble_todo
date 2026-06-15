@@ -1,6 +1,6 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { Task } from '../types';
-import { CATEGORIES, type CategoryStyle } from '../lib/mapping';
+import type { CategoryDef, Task } from '../types';
+import { type CategoryStyle, FALLBACK_STYLE } from '../lib/mapping';
 import { ColorPicker } from './controls/ColorPicker';
 import { EffortBar } from './controls/EffortBar';
 import { ImportanceToggle } from './controls/ImportanceToggle';
@@ -12,19 +12,16 @@ const S = { close: 0, title: 40, notes: 130, row1: 230, row2: 300, row3: 370, ro
 
 const GREY_STYLE: CategoryStyle = {
   label: 'New',
-  core: 'rgba(220, 225, 240, 0.85)',
-  body: 'rgba(130, 135, 160, 0.95)',
-  dark: 'rgba(20, 22, 36, 0.98)',
-  glow: 'rgba(150, 155, 180, 0.50)',
+  core:   'rgba(220, 225, 240, 0.85)',
+  body:   'rgba(130, 135, 160, 0.95)',
+  dark:   'rgba(20,  22,  36,  0.98)',
+  glow:   'rgba(150, 155, 180, 0.50)',
   swatch: '#828790',
 };
 
 function Row({ label, delay, children }: { label: string; delay: number; children: React.ReactNode }) {
   return (
-    <div
-      className="reveal-item flex items-center gap-6"
-      style={{ animationDelay: `${delay}ms` }}
-    >
+    <div className="reveal-item flex items-center gap-6" style={{ animationDelay: `${delay}ms` }}>
       <span className="w-28 shrink-0 text-base" style={{ color: 'var(--ink-soft)' }}>
         {label}
       </span>
@@ -38,16 +35,31 @@ interface ControlsProps {
   effort: Task['effort'];
   importance: Task['importance'];
   urgency: Task['urgency'];
+  categories: CategoryDef[];
+  stylesMap: Record<string, CategoryStyle>;
   onChange: (patch: Partial<Task>) => void;
+  onAddCategory: (label: string, hue: number) => string;
+  onUpdateCategory: (id: string, patch: { label?: string; hue?: number }) => void;
+  onDeleteCategory: (id: string) => void;
 }
 
 const TaskControls = memo(function TaskControls({
-  category, effort, importance, urgency, onChange,
+  category, effort, importance, urgency,
+  categories, stylesMap,
+  onChange, onAddCategory, onUpdateCategory, onDeleteCategory,
 }: ControlsProps) {
   return (
     <div className="mt-10 flex flex-col gap-5 pb-6">
       <Row label="Color" delay={S.row1}>
-        <ColorPicker value={category} onChange={(c) => onChange({ category: c })} />
+        <ColorPicker
+          value={category}
+          categories={categories}
+          stylesMap={stylesMap}
+          onChange={(c) => onChange({ category: c })}
+          onAdd={onAddCategory}
+          onUpdate={onUpdateCategory}
+          onDelete={onDeleteCategory}
+        />
       </Row>
       <Row label="Size / Effort" delay={S.row2}>
         <EffortBar value={effort} onChange={(e) => onChange({ effort: e })} />
@@ -66,14 +78,24 @@ interface Props {
   task: Task;
   morphRect: DOMRect | null;
   isNew?: boolean;
+  categories: CategoryDef[];
+  stylesMap: Record<string, CategoryStyle>;
   onChange: (patch: Partial<Task>) => void;
   onClose: () => void;
   onRemove: () => void;
+  onAddCategory: (label: string, hue: number) => string;
+  onUpdateCategory: (id: string, patch: { label?: string; hue?: number }) => void;
+  onDeleteCategory: (id: string) => void;
 }
 
-export function FocusView({ task, morphRect, isNew, onChange, onClose, onRemove }: Props) {
+export function FocusView({
+  task, morphRect, isNew,
+  categories, stylesMap,
+  onChange, onClose, onRemove,
+  onAddCategory, onUpdateCategory, onDeleteCategory,
+}: Props) {
   const titleRef = useRef<HTMLTextAreaElement>(null);
-  const style = isNew ? GREY_STYLE : CATEGORIES[task.category];
+  const style = isNew ? GREY_STYLE : (stylesMap[task.category] ?? FALLBACK_STYLE);
   const [confirmRemove, setConfirmRemove] = useState(false);
 
   const onChangeRef = useRef(onChange);
@@ -105,8 +127,18 @@ export function FocusView({ task, morphRect, isNew, onChange, onClose, onRemove 
     setTimeout(onClose, 380);
   }, [onClose]);
 
+  const confirmRemoveRef = useRef(false);
+  confirmRemoveRef.current = confirmRemove;
+
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClose(); };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape') return;
+      if (confirmRemoveRef.current) {
+        setConfirmRemove(false);
+      } else {
+        handleClose();
+      }
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [handleClose]);
@@ -146,7 +178,7 @@ export function FocusView({ task, morphRect, isNew, onChange, onClose, onRemove 
         className={`morph-content${revealed ? ' visible' : ''}`}
         onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
       >
-        {/* Close button — top right */}
+        {/* Close — top right */}
         <button
           type="button"
           onClick={handleClose}
@@ -157,7 +189,7 @@ export function FocusView({ task, morphRect, isNew, onChange, onClose, onRemove 
           ×
         </button>
 
-        {/* Remove button — top left */}
+        {/* Remove — top left */}
         <button
           type="button"
           onClick={() => setConfirmRemove(true)}
@@ -213,29 +245,25 @@ export function FocusView({ task, morphRect, isNew, onChange, onClose, onRemove 
             effort={task.effort}
             importance={task.importance}
             urgency={task.urgency}
+            categories={categories}
+            stylesMap={stylesMap}
             onChange={stableChange}
+            onAddCategory={onAddCategory}
+            onUpdateCategory={onUpdateCategory}
+            onDeleteCategory={onDeleteCategory}
           />
         </div>
       </div>
 
-      {/* Remove confirmation popup */}
       {confirmRemove && (
         <div className="remove-confirm-backdrop" onClick={() => setConfirmRemove(false)}>
           <div className="remove-confirm-dialog" onClick={(e) => e.stopPropagation()}>
             <p className="remove-confirm-text">Remove this task permanently?</p>
             <div className="remove-confirm-actions">
-              <button
-                type="button"
-                className="remove-confirm-cancel"
-                onClick={() => setConfirmRemove(false)}
-              >
+              <button type="button" className="remove-confirm-cancel" onClick={() => setConfirmRemove(false)}>
                 Cancel
               </button>
-              <button
-                type="button"
-                className="remove-confirm-delete"
-                onClick={onRemove}
-              >
+              <button type="button" className="remove-confirm-delete" onClick={onRemove}>
                 Remove
               </button>
             </div>

@@ -1,12 +1,13 @@
 import { memo, useEffect, useRef, useState } from 'react';
 import type { Task } from '../types';
-import { describe } from '../lib/mapping';
+import { describe, type CategoryStyle } from '../lib/mapping';
 
 const DRAG_THRESHOLD = 5;
 const LONG_PRESS_MS = 800;
 
 interface Props {
   task: Task;
+  stylesMap: Record<string, CategoryStyle>;
   registerNode: (id: string, el: HTMLElement | null) => void;
   onOpen: (id: string, rect: DOMRect) => void;
   onComplete: (id: string, cx: number, cy: number, color: string) => void;
@@ -15,9 +16,9 @@ interface Props {
   endDrag: () => void;
 }
 
-function TaskNodeImpl({ task, registerNode, onOpen, onComplete, startDrag, moveDrag, endDrag }: Props) {
+function TaskNodeImpl({ task, stylesMap, registerNode, onOpen, onComplete, startDrag, moveDrag, endDrag }: Props) {
   const ref = useRef<HTMLDivElement>(null);
-  const { style, diameter, opacity } = describe(task);
+  const { style, diameter, opacity } = describe(task, stylesMap);
   const pointerStart = useRef<{ x: number; y: number } | null>(null);
   const isDragging = useRef(false);
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
