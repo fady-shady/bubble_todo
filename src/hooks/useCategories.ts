@@ -1,40 +1,64 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import type { CategoryDef } from '../types';
-import { categoryStyleFromHue, DEFAULT_CATEGORIES, type CategoryStyle } from '../lib/mapping';
+import { categoryStyleFromHue, type CategoryStyle } from '../lib/mapping';
+import { supabase } from '../lib/supabase';
 
-const CAT_KEY = 'field.categories.v1';
-
-function loadCategories(): CategoryDef[] {
-  try {
-    const raw = localStorage.getItem(CAT_KEY);
-    if (!raw) return DEFAULT_CATEGORIES;
-    const parsed = JSON.parse(raw) as CategoryDef[];
-    if (!Array.isArray(parsed) || parsed.length === 0) return DEFAULT_CATEGORIES;
-    return parsed;
-  } catch {
-    return DEFAULT_CATEGORIES;
-  }
+interface DbCategory {
+  id: string;
+  label: string;
+  hue: number;
+  is_archived: boolean;
+  archived_at: string | null;
 }
 
-export function useCategories() {
-  const [categories, setCategories] = useState<CategoryDef[]>(loadCategories);
+function dbToCategoryDef(row: DbCategory): CategoryDef {
+  return { id: row.id, label: row.label, hue: row.hue };
+}
+
+export function useCategories(userId: string | null) {
+  const [categories, setCategories] = useState<CategoryDef[]>([]);
 
   useEffect(() => {
-    localStorage.setItem(CAT_KEY, JSON.stringify(categories));
-  }, [categories]);
+    if (!userId) {
+      setCategories([]);
+      return;
+    }
 
-  const addCategory = useCallback((label: string, hue: number): string => {
-    const id = `cat-${Date.now()}-${Math.random().toString(36).slice(2, 5)}`;
-    setCategories((prev) => [...prev, { id, label, hue }]);
-    return id;
+    supabase
+      .from('categories')
+      .select('*')
+      .eq('is_archived', false)
+      .order('created_at', { ascending: true })
+      .then(({ data, error }) => {
+        if (!error && data) setCategories((data as DbCategory[]).map(dbToCategoryDef));
+      });
+  }, [userId]);
+
+  const addCategory = useCallback(async (label: string, hue: number): Promise<string> => {
+    const { data, error } = await supabase
+      .from('categories')
+      .insert({ label, hue })
+      .select()
+      .single();
+
+    if (error || !data) return `tmp-${Date.now()}`;
+    const cat = dbToCategoryDef(data as DbCategory);
+    setCategories((prev) => [...prev, cat]);
+    return cat.id;
   }, []);
 
   const updateCategory = useCallback((id: string, patch: { label?: string; hue?: number }) => {
     setCategories((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
+    supabase.from('categories').update(patch).eq('id', id).then(() => {});
   }, []);
 
   const deleteCategory = useCallback((id: string) => {
     setCategories((prev) => prev.filter((c) => c.id !== id));
+    supabase
+      .from('categories')
+      .update({ is_archived: true, archived_at: new Date().toISOString() })
+      .eq('id', id)
+      .then(() => {});
   }, []);
 
   const stylesMap = useMemo<Record<string, CategoryStyle>>(

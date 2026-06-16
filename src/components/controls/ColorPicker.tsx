@@ -8,7 +8,7 @@ interface Props {
   categories: CategoryDef[];
   stylesMap: Record<string, CategoryStyle>;
   onChange: (c: Category) => void;
-  onAdd: (label: string, hue: number) => string;
+  onAdd: (label: string, hue: number) => Promise<string>;
   onUpdate: (id: string, patch: { label?: string; hue?: number }) => void;
   onDelete: (id: string) => void;
 }
@@ -89,8 +89,7 @@ export function ColorPicker({ value, categories, stylesMap, onChange, onAdd, onU
           existing={editor.mode === 'edit' ? editor.cat : null}
           onSave={(label, hue) => {
             if (editor.mode === 'new') {
-              const id = onAdd(label, hue);
-              onChange(id);
+              onAdd(label, hue).then((id) => onChange(id));
             } else {
               onUpdate(editor.cat.id, { label, hue });
             }

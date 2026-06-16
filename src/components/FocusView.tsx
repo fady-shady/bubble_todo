@@ -38,7 +38,7 @@ interface ControlsProps {
   categories: CategoryDef[];
   stylesMap: Record<string, CategoryStyle>;
   onChange: (patch: Partial<Task>) => void;
-  onAddCategory: (label: string, hue: number) => string;
+  onAddCategory: (label: string, hue: number) => Promise<string>;
   onUpdateCategory: (id: string, patch: { label?: string; hue?: number }) => void;
   onDeleteCategory: (id: string) => void;
 }
@@ -83,7 +83,7 @@ interface Props {
   onChange: (patch: Partial<Task>) => void;
   onClose: () => void;
   onRemove: () => void;
-  onAddCategory: (label: string, hue: number) => string;
+  onAddCategory: (label: string, hue: number) => Promise<string>;
   onUpdateCategory: (id: string, patch: { label?: string; hue?: number }) => void;
   onDeleteCategory: (id: string) => void;
 }
