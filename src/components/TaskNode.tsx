@@ -7,6 +7,7 @@ const LONG_PRESS_MS = 800;
 
 interface Props {
   task: Task;
+  scale: number;
   stylesMap: Record<string, CategoryStyle>;
   registerNode: (id: string, el: HTMLElement | null) => void;
   onOpen: (id: string, rect: DOMRect) => void;
@@ -16,9 +17,10 @@ interface Props {
   endDrag: () => void;
 }
 
-function TaskNodeImpl({ task, stylesMap, registerNode, onOpen, onComplete, startDrag, moveDrag, endDrag }: Props) {
+function TaskNodeImpl({ task, scale, stylesMap, registerNode, onOpen, onComplete, startDrag, moveDrag, endDrag }: Props) {
   const ref = useRef<HTMLDivElement>(null);
-  const { style, diameter, opacity } = describe(task, stylesMap);
+  const { style, diameter: baseDiameter, opacity } = describe(task, stylesMap);
+  const diameter = baseDiameter * scale;
   const pointerStart = useRef<{ x: number; y: number } | null>(null);
   const isDragging = useRef(false);
   const pressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);

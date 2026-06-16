@@ -49,7 +49,7 @@ export function UrgencySelector({ value, onChange }: Props) {
           onClick={() => onChange(val)}
           onMouseEnter={() => movePillTo(idx)}
           aria-pressed={val === value}
-          className="relative px-3 py-1 text-base transition-colors duration-150"
+          className="relative px-4 py-2.5 text-sm sm:px-3 sm:py-1 sm:text-base transition-colors duration-150"
           style={{
             color: val === value ? 'var(--ink)' : 'var(--ink-faint)',
             fontWeight: val === value ? 600 : 400,

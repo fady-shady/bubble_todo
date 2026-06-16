@@ -21,8 +21,8 @@ const GREY_STYLE: CategoryStyle = {
 
 function Row({ label, delay, children }: { label: string; delay: number; children: React.ReactNode }) {
   return (
-    <div className="reveal-item flex items-center gap-6" style={{ animationDelay: `${delay}ms` }}>
-      <span className="w-28 shrink-0 text-base" style={{ color: 'var(--ink-soft)' }}>
+    <div className="reveal-item flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-6" style={{ animationDelay: `${delay}ms` }}>
+      <span className="shrink-0 text-sm sm:w-28 sm:text-base" style={{ color: 'var(--ink-soft)' }}>
         {label}
       </span>
       {children}
@@ -49,7 +49,7 @@ const TaskControls = memo(function TaskControls({
   onChange, onAddCategory, onUpdateCategory, onDeleteCategory,
 }: ControlsProps) {
   return (
-    <div className="mt-10 flex flex-col gap-5 pb-6">
+    <div className="mt-6 flex flex-col gap-6 pb-6 sm:mt-10 sm:gap-5">
       <Row label="Color" delay={S.row1}>
         <ColorPicker
           value={category}
@@ -218,7 +218,7 @@ export function FocusView({
         </button>
 
         <div
-          className="mx-auto flex min-h-full w-full max-w-5xl flex-col px-8 py-16 md:px-14"
+          className="mx-auto flex min-h-full w-full max-w-5xl flex-col px-5 py-20 sm:px-8 sm:py-16 md:px-14"
           onClick={(e) => e.stopPropagation()}
         >
           <textarea
@@ -227,7 +227,7 @@ export function FocusView({
             onChange={(e) => { onChange({ title: e.target.value }); autosize(e.target); }}
             rows={1}
             placeholder="Untitled thought"
-            className="reveal-item editable-title text-5xl md:text-6xl"
+            className="reveal-item editable-title text-4xl sm:text-5xl md:text-6xl"
             style={{ animationDelay: `${S.title}ms` }}
             spellCheck={false}
           />
@@ -236,8 +236,8 @@ export function FocusView({
             value={task.notes}
             onChange={(e) => onChange({ notes: e.target.value })}
             placeholder="Start typing your task details…"
-            className="reveal-item editable-notes mt-8 flex-1 text-xl"
-            style={{ animationDelay: `${S.notes}ms`, minHeight: '32vh' }}
+            className="reveal-item editable-notes mt-5 flex-1 text-base sm:mt-8 sm:text-xl"
+            style={{ animationDelay: `${S.notes}ms`, minHeight: '20vh' }}
           />
 
           <TaskControls

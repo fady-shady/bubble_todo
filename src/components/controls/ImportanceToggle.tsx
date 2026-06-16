@@ -48,7 +48,7 @@ export function ImportanceToggle({ value, onChange }: Props) {
           onClick={() => onChange(val)}
           onMouseEnter={() => movePillTo(idx)}
           aria-pressed={idx === activeIdx}
-          className="relative px-3 py-1 text-base transition-colors duration-150"
+          className="relative px-4 py-2.5 text-sm sm:px-3 sm:py-1 sm:text-base transition-colors duration-150"
           style={{
             color: idx === activeIdx ? 'var(--ink)' : 'var(--ink-faint)',
             fontWeight: idx === activeIdx ? 600 : 400,

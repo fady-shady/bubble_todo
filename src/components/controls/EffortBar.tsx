@@ -28,10 +28,10 @@ export function EffortBar({ value, onChange }: Props) {
         const filled = seg <= value;
         const isHovered = seg === hovered;
         const bg = isHovered
-          ? 'rgba(236, 240, 247, 0.52)'          // half-white preview
+          ? 'rgba(236, 240, 247, 0.52)'
           : filled
-            ? 'rgba(236, 240, 247, 0.92)'          // filled
-            : 'rgba(236, 240, 247, 0.16)';         // unfilled
+            ? 'rgba(236, 240, 247, 0.92)'
+            : 'rgba(236, 240, 247, 0.16)';
 
         return (
           <button
@@ -42,14 +42,19 @@ export function EffortBar({ value, onChange }: Props) {
             aria-label={`Effort ${seg} — ${EFFORT_TIME[seg]}`}
             aria-pressed={seg === value}
             data-tooltip={EFFORT_TIME[seg]}
-            className="rounded-full transition-all duration-150"
-            style={{
-              width: 36,
-              height: 5,
-              background: bg,
-              boxShadow: filled && !isHovered ? '0 0 10px rgba(236,240,247,0.4)' : 'none',
-            }}
-          />
+            className="flex items-center justify-center transition-all duration-150"
+            style={{ width: 36, height: 44, background: 'transparent', border: 'none', padding: 0 }}
+          >
+            <span
+              className="rounded-full block"
+              style={{
+                width: 36,
+                height: 5,
+                background: bg,
+                boxShadow: filled && !isHovered ? '0 0 10px rgba(236,240,247,0.4)' : 'none',
+              }}
+            />
+          </button>
         );
       })}
     </div>
